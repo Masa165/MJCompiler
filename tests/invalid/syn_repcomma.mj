@@ -1,0 +1,5 @@
+program Syn2
+   int x, , y;   // višak zareza
+{
+   void main() { }
+}

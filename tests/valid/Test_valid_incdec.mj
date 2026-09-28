@@ -1,0 +1,11 @@
+program Test4
+   int i;
+{
+   void main() {
+      i = 0;
+      i++;
+      print(i);
+      i--;
+      print(i);
+   }
+}

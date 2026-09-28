@@ -1,0 +1,6 @@
+program Syn3
+{
+   void main() {
+      print(5;   // fali )
+   }
+}

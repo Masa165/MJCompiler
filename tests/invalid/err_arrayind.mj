@@ -1,0 +1,8 @@
+program Err4
+   int arr[];
+{
+   void main() {
+      arr = new int[5];
+      arr[true] = 3;   // indeks mora biti int
+   }
+}

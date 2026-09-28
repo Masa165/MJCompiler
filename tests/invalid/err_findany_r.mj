@@ -1,0 +1,8 @@
+program Err7
+   int x;
+   bool b;
+{
+   void main() {
+      b = x.findAny(1);   // x nije niz
+   }
+}

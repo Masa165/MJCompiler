@@ -1,0 +1,12 @@
+program Test1
+   int x, y;
+   bool b;
+{
+   void main() {
+      x = 5;
+      y = x + 3;
+      b = true;
+      print(y);
+      print(b);
+   }
+}

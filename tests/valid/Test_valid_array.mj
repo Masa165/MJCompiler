@@ -1,0 +1,15 @@
+program Test2
+   int arr[];
+   int len;
+{
+   void main() {
+      arr = new int[10];
+      arr[3] = 7;
+      arr[5]=-1;
+      arr[9]=27;
+      len = arr.length;
+      print(len);
+      len=arr[^3];
+      print(len);
+   }
+}

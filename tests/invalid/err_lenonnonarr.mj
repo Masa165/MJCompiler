@@ -1,0 +1,7 @@
+program Err5
+   int x;
+{
+   void main() {
+      print(x.length);   // x nije niz
+   }
+}

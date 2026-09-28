@@ -1,0 +1,10 @@
+program Err8
+   bool cond;
+   int x;
+   bool b;
+{
+   void main() {
+      cond = true;
+      x = cond ? 5 : false;   // int i bool
+   }
+}

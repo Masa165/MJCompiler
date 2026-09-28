@@ -1,0 +1,6 @@
+program Err1
+   int x;
+   int x;   // greška: dupla deklaracija
+{
+   void main() { }
+}

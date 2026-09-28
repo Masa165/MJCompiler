@@ -1,0 +1,9 @@
+program Test7
+   const int LIMIT = 10;
+   int arr[];
+{
+   void main() {
+      arr = new int[LIMIT];
+      print(arr.length);
+   }
+}

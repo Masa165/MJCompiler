@@ -1,0 +1,7 @@
+program Err2
+   int a;
+{
+   void main() {
+      a = b;   // b nije deklarisan
+   }
+}

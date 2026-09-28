@@ -1,0 +1,210 @@
+package rs.ac.bg.etf.pp1;
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import rs.ac.bg.etf.pp1.ast.*;
+
+parser code {:
+
+	Logger log = Logger.getLogger(getClass());
+   
+   
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+     
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+  
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+  
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+
+:}
+
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null) 
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+terminal EQUAL, INC, DEC, LPAREN, RPAREN, COMMA, SEMI, READ, PRINT, PROG;
+non terminal  Statement, ActPars ;
+terminal Integer NUMBER, CHARCONST, TRUE, FALSE;
+terminal String IDENT;
+terminal QUESTION, COLON, MINUS, PLUS, STAR, DIV, MOD, NEW, LBRACKET, RBRACKET, DOT, FINDANY;
+non terminal  CondFact, Addop, Mulop; 
+terminal EQ, NE, GT, GE, LT, LE;
+terminal  LBRACE, RBRACE, VOID, CONST,QUESTIONEQUAL, LENGTH, QUESTIONQUESTION, LBRACKETCAP ;
+non terminal Program, Decl, MethodDeclList, ConstDecl, VarDecl, MethodDecl, FormParams, VarDeclList, StatementList, ConstDec, FormPars, DesignatorStatement, VarDec;
+non terminal rs.etf.pp1.symboltable.concepts.Obj  ProgramName, MethodDeclName, Designator, Const, numConst, charConst, boolConst, Relop;
+non terminal rs.etf.pp1.symboltable.concepts.Struct  Type, Expr, TermExpr, Term, Factor;
+
+Program ::=(ProgramRoot)  PROG ProgramName:programName Decl LBRACE MethodDeclList RBRACE;
+ProgramName ::= (ProgramNamee) IDENT:programName;
+Decl ::=(DeclsC)Decl ConstDecl
+        |
+        (DeclsV)Decl VarDecl
+        |
+        (VarDeclDecl)VarDecl
+        |
+        (ConstDeclDecl)ConstDecl
+        |
+        (NoDecl)
+        ;
+MethodDeclList ::=(MethodDecls)MethodDeclList MethodDecl
+                |
+                (NoMethodDecl)
+                ;
+                
+MethodDecl  ::=
+            (MethodDeclVoid) MethodDeclName: methodDeclName LPAREN FormParams RPAREN VarDeclList LBRACE StatementList RBRACE
+            ;
+MethodDeclName ::=(MethodVoidName)VOID IDENT:methodName;
+VarDeclList ::=(VarDecls) VarDeclList VarDecl
+            |
+            (NoVarDecl)
+            ;
+StatementList ::=(Statements)StatementList Statement
+            |
+            (NoStatements)
+            ;
+VarDec ::=(SimpleVar)Type:type IDENT:ident
+        |
+        (ArrayVar)Type:type IDENT:ident LBRACKET RBRACKET
+        |
+        (SimpleVarDecls)VarDec COMMA IDENT:ident 
+        |
+        (ArrayVarDecls)VarDec COMMA IDENT:ident LBRACKET RBRACKET
+        |
+        (ErrorVarDec)error:l
+        {:parser.report_error("Opotavak od greske pri definiciji promenljive", null);:}
+        ;
+VarDecl ::=(VarDeclSingle)VarDec SEMI;
+ConstDec ::=(SimpleConstDec) CONST Type:type IDENT:ident EQUAL Const:val
+            |
+            (ConstDecList) ConstDec COMMA IDENT:ident EQUAL Const:val
+            ;
+ConstDecl ::=(ConstDeclSingle) ConstDec SEMI;
+Const ::=(Numm)numConst:val
+        |
+        (Charr)charConst:val 
+        |
+        (Booll)boolConst:val
+        ;
+FormParams::=(FormParsList)FormPars
+            |
+            (NoFormPars)
+            ;
+FormPars::= (ArrFormPars)FormPars COMMA Type:type IDENT:ident LBRACKET RBRACKET
+            |
+            (SimpleFormPars)FormPars COMMA Type:type IDENT
+            |
+            (ArrFormPar) Type:type IDENT:ident LBRACKET RBRACKET
+            |
+            (SimpleFormPar)Type:type IDENT:ident
+            ;
+
+DesignatorStatement ::= (AssignmentStatement)Designator:designator EQUAL Expr:expr 
+                    |
+                    (QuestionStatement)Designator:designator QUESTIONEQUAL Expr:expr
+                    |
+                    (IncrementStatement)Designator:designator INC
+                    |
+                    (DecrementStatement)Designator:designator DEC
+                    |
+                    (FunCallArgStatement)Designator:designator LPAREN ActPars RPAREN
+                    |
+                    (FunCallStatement)Designator:designator LPAREN  RPAREN
+                    |
+                    (ErrorDesignatorStatement)error:l
+                    {:parser.report_error("Oporavak od greske pri konstrukciji iskaza dodele", null);:}
+                    ;
+
+ActPars ::= (ActParsList)ActPars COMMA Expr:expr
+            |
+            (ActPar)Expr:expr
+            ;
+Statement ::=(FindAnyStatement)Designator:designatorTo  EQUAL Designator:designatorFrom LPAREN Expr:expr RPAREN SEMI
+            |
+            (NormStatement)DesignatorStatement SEMI
+            |
+            (ReadStatement)READ LPAREN Designator:designator RPAREN SEMI
+            |
+            (PrintStatement) PRINT LPAREN Expr:expr RPAREN SEMI
+            |
+            (PrintNumStatement) PRINT LPAREN Expr:expr COMMA numConst:val RPAREN SEMI
+            ;
+Expr ::=(TermExprProd) TermExpr:termExpr
+        |
+        (CondExpr) CondFact QUESTION Expr:exprIf COLON Expr:exprElse
+        |
+        (ExprQuestion) Expr:expr QUESTIONQUESTION Expr:expr1
+        ;
+TermExpr ::= (TermsExpr) TermExpr Addop Term:term
+        |
+        (MinusTermExpr) MINUS Term:term
+        | 
+        (TermExprr) Term:term
+        ; 
+Term ::=(FactorsTerm)Term Mulop Factor:factor
+    |
+    (FactorTerm)Factor:factor
+    ;
+Factor ::=(NumFact) numConst:numConst
+        |
+        (CharFact)charConst:charConst 
+        | 
+        (ExprFact)LPAREN Expr:expr RPAREN 
+        | 
+        (BoolFact)boolConst:boolConst 
+        |
+        (DesignatorFact)Designator:designator 
+        |
+        (CreationFactor) NEW Type:type LBRACKET Expr:expr RBRACKET
+        ;
+Addop ::=(MinusOper) MINUS
+        |
+        (PlusOper)PLUS
+        ;
+Mulop ::=(StarOper)STAR
+        |
+        (DivOper)DIV
+        |
+        (ModOper)MOD
+        ;
+numConst ::=(Num)NUMBER:val;
+Type ::=(IdentType)IDENT:identificator;
+charConst ::=(Char)CHARCONST:val;
+boolConst ::=(BoolTrue) TRUE:val
+            |
+            (BoolFalse)FALSE:val
+            ;
+CondFact ::=(ExprCondFact) TermExpr:termExpr 
+            |
+            (CondFactRel) TermExpr:termExprL Relop TermExpr:termExprR
+            ;
+Relop ::= (Equal) EQ:val |(NotEqual) NE:val |(Greater) GT:val |(GreaterEq) GE:val |(Less) LT:val |(LessEqual) LE:val;
+Designator ::= (LengthDesignator)IDENT:ident DOT LENGTH
+            |
+            (IdentDesignator)IDENT:ident
+            |
+            (IndexDesingator) IDENT:ident LBRACKET Expr:expr RBRACKET
+            |
+            (FindAnyDesignator)IDENT:ident DOT FINDANY
+            |
+            (SIndexDesignator)IDENT:ident LBRACKETCAP Expr RBRACKET
+            ;

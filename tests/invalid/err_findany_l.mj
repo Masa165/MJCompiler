@@ -1,0 +1,9 @@
+program Err6
+   int arr[];
+   int x;
+{
+   void main() {
+      arr = new int[3];
+      x = arr.findAny(1);   // x nije bool
+   }
+}

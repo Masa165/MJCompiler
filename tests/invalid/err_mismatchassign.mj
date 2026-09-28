@@ -1,0 +1,7 @@
+program Err3
+   int x;
+{
+   void main() {
+      x = true;   // int ← bool
+   }
+}
